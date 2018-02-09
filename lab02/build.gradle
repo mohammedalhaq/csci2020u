@@ -9,3 +9,16 @@ dependencies {
 		name: 'commons-csv',
 		version: '1.5'
 }
+
+task execute(type:JavaExec, dependsOn:'classes'){
+	main = 'CSVDemo'
+	classpath = sourceSets.main.runtimeClasspath	
+}
+
+jar{
+	manifest{
+		attributes 'Main-Class': 'CSVDemo',
+			'Implementation-Title':'lab03'
+			'Implementation-Version':'1.0'
+	}
+}
