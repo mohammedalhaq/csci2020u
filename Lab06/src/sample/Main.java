@@ -28,26 +28,51 @@ public class Main extends Application {
         commerical.setName("Average Commercial");
         barChart.setLegendVisible(false);
 
+
+
         String[] year = {"2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016"};
+
         for (int i =0; i<=7;i++){
-            XYChart.Data data = new XYChart.Data(year[i],avgHousingPricesByYear[i]);
-            //data.getNode().setStyle("-fx-bar-fill: blue;");
+            XYChart.Data<String, Number> data = new XYChart.Data(year[i],avgHousingPricesByYear[i]);
             housing.getData().add(data);
             data = new XYChart.Data(year[i],avgCommercialPricesByYear[i]);
-            //data.getNode().setStyle("-fx-fill: red");
             commerical.getData().add(data);
         }
+
+
         barChart.getData().addAll(housing,commerical);
 
+        for (XYChart.Series<String, Number> series : barChart.getData()) {
+            if (series.getName().equals("Average Housing")) {
+                for (XYChart.Data data : series.getData()) {
+                    data.getNode().setStyle("-fx-bar-fill: blue;");
+                }
+            }
+            else if (series.getName().equals("Average Commercial")) {
+                for (XYChart.Data data : series.getData()) {
+                    data.getNode().setStyle("-fx-bar-fill: red");
+                }
+            }
+        }
+
+
         ObservableList<PieChart.Data> data= FXCollections.observableArrayList();
+
         for (int i =0; i < 6; i++) {
             PieChart.Data temp = new PieChart.Data(ageGroups[i], purchasesByAgeGroup[i]);
-            temp.getNode().setStyle("-fx-pie-color: " + pieColours[i] + ";");
             data.add(temp);
         }
+
         final PieChart pieChart = new PieChart(data);
         pieChart.setLegendVisible(false);
         pieChart.setTitle("Purchases by Age Group");
+
+        int i=0;
+
+        for (PieChart.Data temp : pieChart.getData()) {
+            temp.getNode().setStyle("-fx-pie-color: " + pieColours[i].toString().replace("0x", "#") + ";");
+            i++;
+        }
 
         root.getChildren().addAll(barChart, pieChart);
         primaryStage.setScene(new Scene(root, 1000, 500));
