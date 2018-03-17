@@ -5,12 +5,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -18,6 +23,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.net.URL;
 
 public class Main extends Application {
     static String currentFile = "default.csv"; //default file to test (change it on proper usage)
@@ -32,6 +38,7 @@ public class Main extends Application {
 
         tableView = new TableView<>();
         setColumns();
+        populate();
 
 
         MenuBar menuBar = new MenuBar();
@@ -64,7 +71,11 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                        save();
+                     if (currentFile!=null) {
+                         save();
+                     } else {
+                         saveAs(primaryStage);
+                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -75,17 +86,7 @@ public class Main extends Application {
         menuSaveAs.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setInitialDirectory(new File("."));
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(".csv", "*.csv"));
-                File file = fileChooser.showSaveDialog(primaryStage);
-                currentFile = file.getName();
-                try {
-                    save();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
+                saveAs(primaryStage);
             }
         });
 
@@ -144,14 +145,49 @@ public class Main extends Application {
         gridPane.setMargin(finalField,new Insets(15));
         gridPane.setMargin(button,new Insets(15));
 
-
         //creates a stackpane to display tableView
         StackPane stackPane = new StackPane();
         stackPane.getChildren().addAll(tableView);
         VBox vBox = new VBox(menuBar,stackPane, gridPane);
 
-        primaryStage.setScene(new Scene(vBox));
+        Scene scene = new Scene(vBox);
+
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.ESCAPE){
+                    System.out.println("Do something");
+                }
+            }
+        });
+
+        final KeyCombination toSave = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
+            scene.addEventHandler(KeyEvent.KEY_RELEASED, new EventHandler<KeyEvent>() {
+                @Override
+                public void handle(KeyEvent event) {
+                    try {
+                        save();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+        primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    public static void saveAs(Stage primaryStage) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File("."));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(".csv", "*.csv"));
+        File file = fileChooser.showSaveDialog(primaryStage);
+        currentFile = file.getName();
+        try {
+            save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void save() throws IOException{
@@ -201,7 +237,13 @@ public class Main extends Application {
         letterCol.setMinWidth(92);
         letterCol.setCellValueFactory(new PropertyValueFactory<>("letterG"));
 
+        tableView.setItems(marks);
+        //sets the items in the tableView to the test data
+        tableView.getColumns().addAll(idCol, assignmentCol, midtermCol, finalCol, markCol, letterCol); //adds all the columns to TableView
 
+    }
+
+    public static void populate(){
         /* default student records for testing purposes */
         marks.add(new StudentRecord("100100100", 75.0f, 68.0f, 54.25f));
         marks.add(new StudentRecord("100100101", 70.0f, 69.25f, 51.5f));
@@ -213,10 +255,6 @@ public class Main extends Application {
         marks.add(new StudentRecord("100100107", 55.0f, 47.0f, 50.5f));
         marks.add(new StudentRecord("100100108", 40.0f, 32.5f, 27.75f));
         marks.add(new StudentRecord("100100109", 82.5f, 77.0f, 74.25f));
-
-        tableView.setItems(marks);
-        //sets the items in the tableView to the test data
-        tableView.getColumns().addAll(idCol, assignmentCol, midtermCol, finalCol, markCol, letterCol); //adds all the columns to TableView
 
     }
 
